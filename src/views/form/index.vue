@@ -51,27 +51,26 @@
 export default {
   data() {
     return {
-      form: {
-        name: '',
-        region: '',
-        date1: '',
-        date2: '',
-        delivery: false,
-        type: [],
-        resource: '',
-        desc: ''
-      }
+      arr: [
+        ['a', 'b', 'c', 'd'],
+        ['e', 'f', 'g', 'h'],
+        ['i', 'j', 'k', 'l'],
+        ['m', 'n', 'o', 'p']
+      ]
     }
   },
+  created() {
+    this.init(this.arr)
+  },
   methods: {
-    onSubmit() {
-      this.$message('submit!')
-    },
-    onCancel() {
-      this.$message({
-        message: 'cancel!',
-        type: 'warning'
-      })
+    init(arr) {
+      const array = []
+      const i = 0
+      do {
+        array.push(arr.splice([i][arr.length - arr.length], 1))
+      } while (array.length !== (arr.length * arr.length))
+      console.log(array)
+      console.log(arr)
     }
   }
 }

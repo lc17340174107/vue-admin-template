@@ -8,6 +8,14 @@ export function getRoleList(params) {
   })
 }
 
+export function updateOneRole(data) {
+  return request({
+    url: '/vue-admin-template/role/updateOne',
+    method: 'post',
+    data
+  })
+}
+
 export function deleteOneRole(data) {
   return request({
     url: '/vue-admin-template/role/deleteOne',

@@ -60,9 +60,10 @@
           <el-tree
             ref="menu"
             :data="menuData"
+            :default-checked-keys="defaultCheck"
             show-checkbox
             default-expand-all
-            node-key="path"
+            node-key="_id"
             highlight-current
             :props="defaultProps"
           />
@@ -77,8 +78,8 @@
 </template>
 
 <script>
-import { getRoleList, deleteOneRole, addRole } from '@/api/role'
-import { getRouteList } from '@/api/menu'
+import { getRoleList, deleteOneRole, addRole, updateOneRole } from '@/api/role'
+import { getRouteList, getRouteLists } from '@/api/menu'
 export default {
   name: 'Role',
   data() {
@@ -90,6 +91,7 @@ export default {
         label: 'label'
       },
       menuNodeAll: false, // 是否是全选状态
+      defaultCheck: [], // 树节点默认选中的_id集合
 
       title: '新增角色', // 弹出框显示的标题
       total: 0, // 数据总条数
@@ -129,9 +131,33 @@ export default {
         this.total = data.total
       })
     },
-    // 点击编辑时触发
+    // 点击编辑时触发 (显示已完成  还差后面的修改)
     handleEdit(index, row) {
-      console.log(index, row)
+      this.defaultCheck = []
+      const array = []
+      this.menuNodeAll = false
+      getRouteList().then(res => {
+        const { data } = res
+        this.menuList = data
+        const arr = this.initTree(data)
+        this.menuData = arr
+        const that = this
+        getRouteLists().then(response => {
+          this.defaultCheck = response.data.map(item => {
+            if (row.role === 'admin') {
+              that.menuNodeAll = true
+              return item._id
+            } else if (item.meta.roles.indexOf(row.role) > -1) {
+              return item._id
+            }
+            if (array.length > 0 && array.length === response.data.length) {
+              that.menuNodeAll = true
+            }
+          })
+        })
+        this.form.role = row.role
+        this.dialogFormVisible = true
+      })
     },
     // 点击删除时触发
     handleDelete(index, row) {
@@ -159,24 +185,11 @@ export default {
     // 初始化树形数据
     initTree(data) {
       for (let i = 0; i < data.length; i++) {
-        if (data[i].children && data[i].children.length > 1) {
-          if (data[i].children[i].pid) {
-            data[i].label = data[i].meta.title
-            this.initTree(data[i].children)
-          } else {
-            if (data[i].children) {
-              data[i].label = data[i].children[0].meta.title
-            } else {
-              data[i].label = data[i].meta.title
-            }
-          }
+        if (data[i].children && data[i].children.length > 0) {
+          data[i].label = data[i].meta.title
+          this.initTree(data[i].children)
         } else {
-          if (data[i].children) {
-            data[i].label = data[i].children[0].meta.title
-            delete data[i].children
-          } else {
-            data[i].label = data[i].meta.title
-          }
+          data[i].label = data[i].meta.title
         }
       }
       return data
@@ -190,6 +203,8 @@ export default {
         const arr = this.initTree(data)
         this.menuData = arr
       })
+      this.restForm()
+      this.menuNodeAll = false
     },
     // 全选
     handleCheckedTreeNodeAll(value) {
@@ -213,6 +228,7 @@ export default {
         if (valid) {
           console.log(this.$refs.menu.getCheckedNodes())
           addRole({ role: this.form.role, menus: this.$refs.menu.getCheckedNodes() }).then(res => {
+            this.$message({ message: res.data.message, type: 'success' })
             this.dialogFormVisible = false
             this.initData(this.currentPage, this.pageSize)
           })
