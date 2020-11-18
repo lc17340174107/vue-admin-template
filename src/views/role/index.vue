@@ -92,6 +92,7 @@ export default {
       },
       menuNodeAll: false, // 是否是全选状态
       defaultCheck: [], // 树节点默认选中的_id集合
+      isEdit: false, // 是否是编辑状态
 
       title: '新增角色', // 弹出框显示的标题
       total: 0, // 数据总条数
@@ -133,29 +134,29 @@ export default {
     },
     // 点击编辑时触发 (显示已完成  还差后面的修改)
     handleEdit(index, row) {
+      this.isEdit = true
       this.defaultCheck = []
-      const array = []
       this.menuNodeAll = false
       getRouteList().then(res => {
         const { data } = res
         this.menuList = data
         const arr = this.initTree(data)
         this.menuData = arr
-        const that = this
         getRouteLists().then(response => {
           this.defaultCheck = response.data.map(item => {
             if (row.role === 'admin') {
-              that.menuNodeAll = true
+              this.menuNodeAll = true
               return item._id
             } else if (item.meta.roles.indexOf(row.role) > -1) {
               return item._id
             }
-            if (array.length > 0 && array.length === response.data.length) {
-              that.menuNodeAll = true
-            }
           })
+          if (this.defaultCheck.length > 0 && this.defaultCheck.indexOf(undefined) === -1 && this.defaultCheck.length === response.data.length) {
+            this.menuNodeAll = true
+          }
         })
         this.form.role = row.role
+        this.form._id = row._id
         this.dialogFormVisible = true
       })
     },
@@ -196,6 +197,7 @@ export default {
     },
     // 点击新增角色时触发
     handleAdd() {
+      this.isEdit = false
       this.dialogFormVisible = true
       getRouteList().then(res => {
         const { data } = res
@@ -226,12 +228,19 @@ export default {
     submitForm(formName) {
       this.$refs[formName].validate((valid) => {
         if (valid) {
-          console.log(this.$refs.menu.getCheckedNodes())
-          addRole({ role: this.form.role, menus: this.$refs.menu.getCheckedNodes() }).then(res => {
-            this.$message({ message: res.data.message, type: 'success' })
-            this.dialogFormVisible = false
-            this.initData(this.currentPage, this.pageSize)
-          })
+          if (this.isEdit === false) {
+            addRole({ role: this.form.role, menus: this.$refs.menu.getCheckedNodes() }).then(res => {
+              this.$message({ message: res.data.message, type: 'success' })
+              this.dialogFormVisible = false
+              this.initData(this.currentPage, this.pageSize)
+            })
+          } else if (this.isEdit === true) {
+            updateOneRole({ role: this.form.role, menus: this.$refs.menu.getCheckedNodes(), _id: this.form._id }).then(res => {
+              this.$message({ message: res.data.message, type: 'success' })
+              this.dialogFormVisible = false
+              this.initData(this.currentPage, this.pageSize)
+            })
+          }
         } else {
           return false
         }
