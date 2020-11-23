@@ -11,6 +11,7 @@
     </el-col>
     <el-col :span="24">
       <el-table :data="roleData" style="width: 100%">
+        v-loading="loading"
         <el-table-column label="角色名称" prop="role" min-width="140" />
         <el-table-column align="right" width="150" min-width="140">
           <template slot-scope="scope">
@@ -69,7 +70,7 @@
           />
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" @click="submitForm('ruleForm')">立即创建</el-button>
+          <el-button type="primary" @click="submitForm('ruleForm')">提交</el-button>
           <el-button @click="cancelForm()">取消</el-button>
         </el-form-item>
       </el-form>
@@ -84,6 +85,7 @@ export default {
   name: 'Role',
   data() {
     return {
+      loading: true,
       menuList: [], // 菜单列表
       menuData: [], // 树形菜单数据
       defaultProps: {
@@ -130,6 +132,7 @@ export default {
         const { data } = res
         this.roleData = data.results
         this.total = data.total
+        this.loading = false
       })
     },
     // 点击编辑时触发 (显示已完成  还差后面的修改)
@@ -255,19 +258,4 @@ export default {
   }
 }
 </script>
-
-<style scoped>
-#pageNation {
-  text-align: center;
-  display: none;
-}
-@media screen and (max-width: 420px) {
-  .block {
-    display: none;
-  }
-  #pageNation {
-    display: block;
-  }
-}
-</style>
 
