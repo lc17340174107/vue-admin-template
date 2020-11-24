@@ -66,6 +66,12 @@
     <!-- 新增编辑时的dialog -->
     <el-dialog :title="title" :visible.sync="dialogFormVisible" :show-close="false">
       <el-form ref="ruleForm" :model="form" :rules="rules" label-width="100px" class="demo-ruleForm">
+        <el-form-item label="上级菜单">
+          <!--        上级菜单选择dialog-->
+          <el-col :span="24">
+            <treeSelect :menu="nowMenu" :menus="menusData" @treeSelect="treeSelect" />
+          </el-col>
+        </el-form-item>
         <el-form-item label="菜单名称" prop="title">
           <el-input v-model="form.title" />
         </el-form-item>
@@ -101,17 +107,19 @@
 <script>
 import { getRouteList } from '@/api/menu'
 import selectIcons from '@/components/Icon/selectIcons'
+import treeSelect from '@/components/treeSelect/treeSelect'
 
 export default {
-  components: { selectIcons },
+  components: { selectIcons, treeSelect },
   data() {
     return {
+      nowMenu: undefined, // 当前菜单_id 传递给子组件使用
       menusData: [], // 菜单结构数据
       loading: true,
       title: '新增菜单', // 弹出框显示的标题
       dialogFormVisible: false, // 控制弹框的显隐
       form: {
-        parentId: null,
+        parentId: '',
         path: '',
         component: '',
         title: '',
@@ -130,9 +138,12 @@ export default {
     this.initData()
   },
   methods: {
+    // 选择上级菜单时触发
+    treeSelect(id) {
+      console.log(id)
+    },
     // 选择图标触发
     select(name) {
-      console.log(this.form)
       this.form.icon = name
     },
     // 获取菜单结构
@@ -150,7 +161,8 @@ export default {
     },
     // 编辑
     handleEdit(row) {
-      console.log(row)
+      this.nowMenu = row._id
+      this.title = '编辑菜单'
     },
     // 删除
     handleRemove(row) {
@@ -174,7 +186,7 @@ export default {
     // 重置表单数据
     restForm() {
       this.form = {
-        parentId: null,
+        parentId: '',
         path: '',
         component: '',
         title: '',
