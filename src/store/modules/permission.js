@@ -38,7 +38,7 @@ export function filterAsyncRoutes(routes, roles) {
 }
 
 const state = {
-  routes: [],
+  routes: [], 
   addRoutes: []
 }
 
@@ -91,8 +91,6 @@ function filterAsyncRouter(asyncRouterMap) {
     return true
   })
 }
-
-
 
 export default {
   namespaced: true,

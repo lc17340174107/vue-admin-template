@@ -73,7 +73,16 @@
           </el-col>
         </el-form-item>
         <el-form-item label="菜单名称" prop="title">
-          <el-input v-model="form.title" />
+          <el-input v-model="form.title" placeholder="请输入菜单的显示名称" />
+        </el-form-item>
+        <el-form-item label="菜单路径" prop="path">
+          <el-input v-model="form.path" placeholder="请输入菜单访问路径" />
+        </el-form-item>
+        <el-form-item label="组件名称" prop="name">
+          <el-input v-model="form.name" placeholder="请输入菜单的name属性" />
+        </el-form-item>
+        <el-form-item label="菜单组件" prop="component">
+          <el-input v-model="form.component" placeholder="请输入菜单的组件路径" />
         </el-form-item>
         <el-form-item label="菜单图标">
           <!--        菜单选择dialog-->
@@ -105,9 +114,10 @@
 </template>
 
 <script>
-import { getRouteList } from '@/api/menu'
+import { addOneMenu, getRouteList } from '@/api/menu'
 import selectIcons from '@/components/Icon/selectIcons'
 import treeSelect from '@/components/treeSelect/treeSelect'
+import router from '@/router'
 
 export default {
   components: { selectIcons, treeSelect },
@@ -140,7 +150,7 @@ export default {
   methods: {
     // 选择上级菜单时触发
     treeSelect(id) {
-      console.log(id)
+      this.form.parentId = id
     },
     // 选择图标触发
     select(name) {
@@ -172,7 +182,17 @@ export default {
     submitForm(formName) {
       this.$refs[formName].validate((valid) => {
         if (valid) {
-          console.log(this.form)
+          addOneMenu(this.form).then(res => {
+            console.log(res)
+            if (res.code === 20000) {
+              this.$message.success(res.data)
+            } else {
+              this.$message.error(res.data)
+            }
+            this.dialogFormVisible = false
+            this.$store.dispatch('generateRoutes', this.$store.state.roles)
+            this.initData()
+          })
         } else {
           return false
         }
